@@ -1,29 +1,55 @@
 import ollama
 
-from github_test import get_repo_content
+from github_repo_parser import get_repo_content
 
 # Initialize the Ollama client
 client = ollama.Client()
 
 # Define the model and the input prompt
 model = "gemma3:12b"  # Replace model name
-prompt = "What is Python?"
-
-# Send the query to the model
-response = client.generate(model=model, prompt=prompt)
-
-# Print the response from the model
-print("Response from Ollama:")
-print(response.response)
+model_settings = {"temperature": 0.1, "top_k": 64, "top_p": 0.95}
 
 # now need to pull in contents and pass to llm with a prompt, ask to summarise
 # then can use ollama to structure the llm output into a json
 # convert json to table and save
 repo_structure, repo_code_dict = get_repo_content(repo_owner="communitiesuk", repo_name="auto-ml-pipeline")
 
-prompt = f"Please examine the following code repository and explain what it does and how it works. Reference specific files and functions in your response. Here a list of files in the repo with the file paths: {repo_structure}, here is a dictionary of each of the python files and the code{repo_code_dict}"
-response = client.generate(model=model, prompt=prompt)
+prompt = f"Please examine the following code repository and explain what it does and how it works. Do not suggest ways the code could be improved. Here a list of files in the repo with the file paths: {repo_structure}, here is a dictionary of each of the code files and the corresponding code{repo_code_dict}"
+
+response = client.generate(model=model, prompt=prompt, options=model_settings)
 
 # Print the response from the model
 print("Response from model:")
 print(response.response)
+
+repo_structure, repo_code_dict = get_repo_content(repo_owner="sean-og8", repo_name="sudoku_solver")
+
+prompt = f"Please examine the following code repository and explain what it does and how it works. Do not suggest ways the code could be improved. Reference specific files and functions in your response. Here a list of files in the repo with the file paths: {repo_structure}, here is a dictionary of each of the python files and the code{repo_code_dict}"
+
+response = client.generate(model=model, prompt=prompt, options=model_settings)
+
+# Print the response from the model
+print("Response from model:")
+print(response.response)
+
+repo_structure, repo_code_dict = get_repo_content(repo_owner="sean-og8", repo_name="repo-summarise")
+
+prompt = f"Please examine the following code repository and explain what it does and how it works. Do not suggest ways the code could be improved. Reference specific files and functions in your response. Here a list of files in the repo with the file paths: {repo_structure}, here is a dictionary of each of the python files and the code{repo_code_dict}"
+
+response = client.generate(model=model, prompt=prompt, options=model_settings)
+
+# Print the response from the model
+print("Response from model:")
+print(response.response)
+
+# repo 2
+#repo_structure, repo_code_dict = get_repo_content(repo_owner="communitiesuk", repo_name="scrolly-data-story-template", options=model_settings)
+
+#prompt = f"Please examine the following code repository and explain what it does and how it works. Do not suggest ways the code could be improved. Reference specific files and functions in your response. Here a list of files in the repo with the file paths: {repo_structure}, here is a dictionary of each of the python files and the code{repo_code_dict}"
+
+#response = client.generate(model=model, prompt=prompt)
+
+## Print the response from the model
+#print("Response from model:")
+#print(response.response)
+
