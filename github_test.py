@@ -50,8 +50,6 @@ def get_repo_content(repo_owner, repo_name):
             print(file_object)
             decoded_content = file_object.decoded_content
             repo_structure.append(file_object)
-            print(file_object.name)
-            print(file_object.name[-3:])
             if file_object.name[-3:] == ".py":
                 code_file_dict[file_object.name] = decoded_content
     return repo_structure, code_file_dict
@@ -59,8 +57,11 @@ def get_repo_content(repo_owner, repo_name):
 repo_structure, repo_code_dict = get_repo_content(repo_owner="communitiesuk", repo_name="auto-ml-pipeline")
 print(repo_structure)
 print(repo_code_dict.keys())
-print(repo_code_dict)
-
+#print(repo_code_dict)
+ 
+# now need to pull in contents and pass to llm with a prompt, ask to summarise
+# then can use ollama to structure the llm output into a json
+# convert json to table and save
 
 
 # To close connections after use
