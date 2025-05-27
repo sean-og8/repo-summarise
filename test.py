@@ -1,4 +1,6 @@
 import ollama
+from ollama import chat
+from pydantic import BaseModel
 
 from github_repo_parser import get_repo_content
 
@@ -22,7 +24,43 @@ response = client.generate(model=model, prompt=prompt, options=model_settings)
 print("Response from model:")
 print(response.response)
 
+
+
+
+class Country(BaseModel):
+  repo_summary: str
+  file_list: list[str]
+  languages: list[str]
+  how_it_works: str
+
+
+response = chat(
+  messages=[
+    {
+      'role': 'user',
+      'content': prompt,
+    }
+  ],
+  model=model,
+  format=Country.model_json_schema(),
+)
+
+country = Country.model_validate_json(response.message.content)
+print(country)
+
+
+
 repo_structure, repo_code_dict = get_repo_content(repo_owner="sean-og8", repo_name="sudoku_solver")
+
+prompt = f"Please examine the following code repository and explain what it does and how it works. Do not suggest ways the code could be improved. Reference specific files and functions in your response. Here a list of files in the repo with the file paths: {repo_structure}, here is a dictionary of each of the python files and the code{repo_code_dict}"
+
+response = client.generate(model=model, prompt=prompt, options=model_settings)
+
+# Print the response from the model
+print("Response from model:")
+print(response.response)
+
+repo_structure, repo_code_dict = get_repo_content(repo_owner="sean-og8", repo_name="inat-amls2-project")
 
 prompt = f"Please examine the following code repository and explain what it does and how it works. Do not suggest ways the code could be improved. Reference specific files and functions in your response. Here a list of files in the repo with the file paths: {repo_structure}, here is a dictionary of each of the python files and the code{repo_code_dict}"
 
