@@ -16,50 +16,6 @@ model_settings = {"temperature": 0.1, "top_k": 64, "top_p": 0.95}
 model_settings = {}
 
 
-
-repo_structure, repo_code_dict, repo_data = get_repo_content(repo_owner="sean-og8", repo_name="sudoku_solver")
-
-# prompt = f"Please examine the following code repository and explain what it does and how it works. Do not suggest ways the code could be improved. Reference specific files and functions in your response. Here a list of files in the repo with the file paths: {repo_structure}, here is a dictionary of each of the python files and the code{repo_code_dict}"
-
-# response = client.generate(model=model, prompt=prompt, options=model_settings)
-
-# # Print the response from the model
-# print("Response from model:")
-# print(response.response)
-
-print("now structured output:")
-
-prompt = f"Here a list of files in the repo with the file paths: {repo_structure}, here is a dictionary of each of the code files and the corresponding code {repo_code_dict}. Tell me about this repository"
-
-class SummaryTable(BaseModel):
-  repo_summary: str
-  file_list: list[str]
-  programming_languages: list[str]
-  how_it_works: str
-  main_topics: list[str]
-
-
-response = chat(
-  messages=[
-    {
-      'role': 'user',
-      'content': prompt,
-    }
-  ],
-  model=model,
-  format=SummaryTable.model_json_schema(),
-)
-
-summary = SummaryTable.model_validate_json(response.message.content)
-print(summary)
-
-table = response.message.content
-
-print(repo_data)
-print(table)
-
-repo_data.update(json.loads(table))
-
 def json_to_plotly_table(json_data, output_filename="plotly_table.html"):
     """
     Converts JSON data to a Pandas DataFrame and outputs it as a Plotly HTML 
@@ -86,12 +42,13 @@ error message if
             data = json.loads(json_data)
         else:
             data = json_data  # Assume it's already a list or dictionary
-
+        print("converting to df")
+        print(data)
         # Convert the JSON data to a Pandas DataFrame
-        df = pd.DataFrame(data)
+        df = data
 
         # Create a Plotly HTML table
-
+        print("creating go table")
         fig = go.Figure(data=[go.Table(header=dict(values=df.columns), cells=dict(values=[df[col] for col in df.columns]))])
         
         # Save the Plotly table to an HTML file
@@ -105,82 +62,50 @@ error message if
 
     return
 
-json_to_plotly_table(json_data=repo_data, output_filename="test.html")
-bug
-# repo 2
-
-repo_structure, repo_code_dict = get_repo_content(repo_owner="communitiesuk", repo_name="auto-ml-pipeline")
-
-prompt = f"Please examine the following code repository and explain what it does and how it works. Do not suggest ways the code could be improved. Here a list of files in the repo with the file paths: {repo_structure}, here is a dictionary of each of the code files and the corresponding code{repo_code_dict}"
-
-response = client.generate(model=model, prompt=prompt, options=model_settings)
-
-# Print the response from the model
-print("Response from model:")
-print(response.response)
-
-print("now using structured output")
-
-prompt = f"Here a list of files in the repo with the file paths: {repo_structure}, here is a dictionary of each of the code files and the corresponding code {repo_code_dict}. Tell me about this repository"
 
 class SummaryTable(BaseModel):
   repo_summary: str
   file_list: list[str]
   programming_languages: list[str]
   how_it_works: str
+  main_topics: list[str]
 
+repos = {
+        # "auto-ml-pipeline": "communitiesuk",
+        # "Mobility_data_prototypes": "communitiesuk",
+        # "scrolly-data-story-template": "communitiesuk",
+        "inat-amls2-project": "sean-og8",
+        "sudoku_solver": "sean-og8",
+        "repo-summarise": "sean-og8"
+        }
 
-response = chat(
-  messages=[
-    {
-      'role': 'user',
-      'content': prompt,
-    }
-  ],
-  model=model,
-  format=SummaryTable.model_json_schema(),
-)
+combined_df = pd.DataFrame()
 
-summary = SummaryTable.model_validate_json(response.message.content)
-print(summary)
+for repo_name in repos.keys():
+    repo_owner = repos[repo_name]
+    print(repo_owner, repo_name)
+    repo_structure, repo_code_dict, repo_data = get_repo_content(repo_owner=repo_owner, repo_name=repo_name)
+    prompt = f"Here a list of files in the repo with the file paths: {repo_structure}, here is a dictionary of each of the code files and the corresponding code {repo_code_dict}. Tell me about this repository"
+    response = chat(
+      messages=[
+        {
+          'role': 'user',
+          'content': prompt,
+        }
+      ],
+      model=model,
+      format=SummaryTable.model_json_schema(),
+    )
+    summary = SummaryTable.model_validate_json(response.message.content)
+    table = response.message.content
+    repo_data.update(json.loads(table))
+    print("updating table")
 
+    df = pd.DataFrame([repo_data])
 
+    combined_df = pd.concat([df, combined_df], axis=0)
+    print(combined_df)
+    print(type(combined_df))
+    print(df)
 
-
-
-
-bug
-
-# make dummy output table, json to csv? json to html table?
-
-repo_structure, repo_code_dict = get_repo_content(repo_owner="sean-og8", repo_name="inat-amls2-project")
-
-prompt = f"Please examine the following code repository and explain what it does and how it works. Do not suggest ways the code could be improved. Reference specific files and functions in your response. Here a list of files in the repo with the file paths: {repo_structure}, here is a dictionary of each of the python files and the code{repo_code_dict}"
-
-response = client.generate(model=model, prompt=prompt, options=model_settings)
-
-# Print the response from the model
-print("Response from model:")
-print(response.response)
-
-repo_structure, repo_code_dict = get_repo_content(repo_owner="sean-og8", repo_name="repo-summarise")
-
-prompt = f"Please examine the following code repository and explain what it does and how it works. Do not suggest ways the code could be improved. Reference specific files and functions in your response. Here a list of files in the repo with the file paths: {repo_structure}, here is a dictionary of each of the python files and the code{repo_code_dict}"
-
-response = client.generate(model=model, prompt=prompt, options=model_settings)
-
-# Print the response from the model
-print("Response from model:")
-print(response.response)
-
-# repo 2
-#repo_structure, repo_code_dict = get_repo_content(repo_owner="communitiesuk", repo_name="scrolly-data-story-template", options=model_settings)
-
-#prompt = f"Please examine the following code repository and explain what it does and how it works. Do not suggest ways the code could be improved. Reference specific files and functions in your response. Here a list of files in the repo with the file paths: {repo_structure}, here is a dictionary of each of the python files and the code{repo_code_dict}"
-
-#response = client.generate(model=model, prompt=prompt)
-
-## Print the response from the model
-#print("Response from model:")
-#print(response.response)
-
+json_to_plotly_table(json_data=combined_df, output_filename="test.html")
