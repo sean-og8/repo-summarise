@@ -17,7 +17,7 @@ model_settings = {}
 
 
 
-repo_structure, repo_code_dict = get_repo_content(repo_owner="sean-og8", repo_name="sudoku_solver")
+repo_structure, repo_code_dict, repo_data = get_repo_content(repo_owner="sean-og8", repo_name="sudoku_solver")
 
 # prompt = f"Please examine the following code repository and explain what it does and how it works. Do not suggest ways the code could be improved. Reference specific files and functions in your response. Here a list of files in the repo with the file paths: {repo_structure}, here is a dictionary of each of the python files and the code{repo_code_dict}"
 
@@ -36,6 +36,7 @@ class SummaryTable(BaseModel):
   file_list: list[str]
   programming_languages: list[str]
   how_it_works: str
+  main_topics: list[str]
 
 
 response = chat(
@@ -51,10 +52,13 @@ response = chat(
 
 summary = SummaryTable.model_validate_json(response.message.content)
 print(summary)
-print(response.message.content)
 
 table = response.message.content
 
+print(repo_data)
+print(table)
+
+repo_data.update(json.loads(table))
 
 def json_to_plotly_table(json_data, output_filename="plotly_table.html"):
     """
@@ -101,7 +105,7 @@ error message if
 
     return
 
-json_to_plotly_table(json_data=table, output_filename="test.html")
+json_to_plotly_table(json_data=repo_data, output_filename="test.html")
 bug
 # repo 2
 
