@@ -127,4 +127,4 @@ rename_map = {
 combined_df.rename(columns=rename_map, inplace=True)
 
 
-json_to_plotly_table(json_data=combined_df, output_filename="test.html")
+json_to_plotly_table(json_data=combined_df, output_filename="output_table.html")
