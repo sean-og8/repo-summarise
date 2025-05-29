@@ -49,7 +49,7 @@ error message if
 
         # Create a Plotly HTML table
         print("creating go table")
-        fig = go.Figure(data=[go.Table(header=dict(values=df.columns), cells=dict(values=[df[col] for col in df.columns]))])
+        fig = go.Figure(data=[go.Table(columnwidth = [100, 80, 80, 80, 80, 180, 180, 180], header=dict(values=df.columns), cells=dict(values=[df[col] for col in df.columns]))])
         # Save the Plotly table to an HTML file
         fig.write_html(output_filename)
         print(f"Plotly HTML table saved to: {output_filename}")
@@ -63,9 +63,9 @@ error message if
 
 
 class SummaryTable(BaseModel):
-  repository_summary: str = Field(alias="Brief summary of the purpose of the repository, use no more than 3 bullet points")
-  how_it_works: str = Field(alias="Brief description of how the repository works, use no more than 3 bullet points")
-  main_topics: list[str] = Field(alias='Describe the top 3 topics only')
+  repository_summary: str = Field(alias="Brief summary of the purpose of the repository, use no more than 2 sentences")
+  how_it_works: str = Field(alias="Brief description of how the repository works, use no more than 2 sentences")
+  main_topics: list[str] = Field(alias='Describe the top 3 topics/techniques only')
   class Config:
       populate_by_name = True
 
@@ -74,6 +74,7 @@ repos = {
         # "Mobility_data_prototypes": "communitiesuk",
         # "scrolly-data-story-template": "communitiesuk",
         "inat-amls2-project": "sean-og8",
+        "scrolly-data-story-template": "sean-og8",
         "sudoku_solver": "sean-og8",
         "repo-summarise": "sean-og8"
         }
@@ -105,10 +106,25 @@ for repo_name in repos.keys():
     combined_df = pd.concat([df, combined_df], axis=0)
     print(combined_df)
     print(type(combined_df))
-    print(df)
-    break
-combined_df[["Langauges", "Describe the top 3 topics only"]] = combined_df[["Langauges", "Describe the top 3 topics only"]].str.replace(",", ", ")
 
 
-# need to add spaces for file list, pgroamming languages, and topics columns
+def format_list_columns(row):
+    # conver list to string
+    row = ', '.join(row)
+    return row
+
+# tidy list vars
+combined_df["Describe the top 3 topics/techniques only"] = combined_df["Describe the top 3 topics/techniques only"].apply(format_list_columns)
+combined_df["Langauges"] = combined_df["Langauges"].apply(format_list_columns)
+
+# tidy col names
+rename_map = {
+    "Describe the top 3 topics/techniques only": "Topics",
+    "Brief description of how the repository works, use no more than 2 sentences": "Method",
+    "Brief summary of the purpose of the repository, use no more than 2 sentences": "Summary"
+}
+
+combined_df.rename(columns=rename_map, inplace=True)
+
+
 json_to_plotly_table(json_data=combined_df, output_filename="test.html")
