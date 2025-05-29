@@ -12,8 +12,7 @@ client = ollama.Client()
 
 # Define the model and the input prompt
 model = "gemma3:12b"  # Replace model name
-model_settings = {"temperature": 0.1, "top_k": 64, "top_p": 0.95}
-model_settings = {"temperature": 0.3, "top_k": 64, "top_p": 0.95}
+model_settings = {"temperature": 0.4, "top_k": 64, "top_p": 0.95}
 
 
 def json_to_plotly_table(json_data, output_filename="plotly_table.html"):
@@ -49,7 +48,23 @@ error message if
 
         # Create a Plotly HTML table
         print("creating go table")
-        fig = go.Figure(data=[go.Table(columnwidth = [100, 80, 80, 80, 80, 180, 180, 180], header=dict(values=df.columns), cells=dict(values=[df[col] for col in df.columns]))])
+        fig = go.Figure(data=[go.Table(
+        columnwidth=[100, 100, 120, 100, 100, 180, 180, 180],
+        header=dict(
+            values=[f'<b>{col}</b>' for col in df.columns],
+            font=dict(size=12),
+            fill_color='navy',
+            align='left',
+            font_color='white'
+        ),
+        cells=dict(
+            values=[df[col] for col in df.columns],
+            fill_color='white',
+            align='left',
+            font_color='black'
+            )
+        )])
+
         # Save the Plotly table to an HTML file
         fig.write_html(output_filename)
         print(f"Plotly HTML table saved to: {output_filename}")
@@ -65,7 +80,7 @@ error message if
 class SummaryTable(BaseModel):
   repository_summary: str = Field(alias="Brief summary of the purpose of the repository, use no more than 2 sentences")
   how_it_works: str = Field(alias="Brief description of how the repository works, use no more than 2 sentences")
-  main_topics: list[str] = Field(alias='Describe the top 3 topics/techniques only')
+  main_topics: list[str] = Field(alias='Describe the top 3 topics/techniques in single words, do not use full sentences')
   class Config:
       populate_by_name = True
 
@@ -73,10 +88,9 @@ repos = {
         # "auto-ml-pipeline": "communitiesuk",
         # "Mobility_data_prototypes": "communitiesuk",
         # "scrolly-data-story-template": "communitiesuk",
+        "repo-summarise": "sean-og8",
         "inat-amls2-project": "sean-og8",
-        "scrolly-data-story-template": "sean-og8",
         "sudoku_solver": "sean-og8",
-        "repo-summarise": "sean-og8"
         }
 
 combined_df = pd.DataFrame()
@@ -114,12 +128,12 @@ def format_list_columns(row):
     return row
 
 # tidy list vars
-combined_df["Describe the top 3 topics/techniques only"] = combined_df["Describe the top 3 topics/techniques only"].apply(format_list_columns)
+combined_df["Describe the top 3 topics/techniques in single words, do not use full sentences"] = combined_df["Describe the top 3 topics/techniques in single words, do not use full sentences"].apply(format_list_columns)
 combined_df["Langauges"] = combined_df["Langauges"].apply(format_list_columns)
 
 # tidy col names
 rename_map = {
-    "Describe the top 3 topics/techniques only": "Topics",
+    "Describe the top 3 topics/techniques in single words, do not use full sentences": "Topics",
     "Brief description of how the repository works, use no more than 2 sentences": "Method",
     "Brief summary of the purpose of the repository, use no more than 2 sentences": "Summary"
 }
