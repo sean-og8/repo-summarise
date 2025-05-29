@@ -30,10 +30,11 @@ def get_repo_content(repo_owner, repo_name):
     # repo metadata
     commits = repo.get_commits()
     commit_dates = [commit.commit.author.date for commit in commits]
-    repo_metadata["title"] = repo_name
-    repo_metadata["owner"] = repo_owner
-    repo_metadata["collaborators"] = ", ".join([user.login for user in repo.get_collaborators()])
-    repo_metadata["latest commit date"] = commit_dates[0].strftime('%d/%m/%Y')
+    repo_metadata["Repository"] = repo_name
+    repo_metadata["Owner"] = repo_owner
+    repo_metadata["Collaborators"] = ", ".join([user.login for user in repo.get_collaborators()])
+    repo_metadata["Langauges"] = list(repo.get_languages().keys())
+    repo_metadata["Last commit date"] = commit_dates[0].strftime('%d/%m/%Y')
     while contents:
         file_object= contents.pop(0)
         if file_object.type == "dir":

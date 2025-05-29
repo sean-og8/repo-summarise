@@ -1,6 +1,6 @@
 import ollama
 from ollama import chat
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import pandas as pd
 import plotly.graph_objects as go
 import json
@@ -13,7 +13,7 @@ client = ollama.Client()
 # Define the model and the input prompt
 model = "gemma3:12b"  # Replace model name
 model_settings = {"temperature": 0.1, "top_k": 64, "top_p": 0.95}
-model_settings = {}
+model_settings = {"temperature": 0.3, "top_k": 64, "top_p": 0.95}
 
 
 def json_to_plotly_table(json_data, output_filename="plotly_table.html"):
@@ -50,7 +50,6 @@ error message if
         # Create a Plotly HTML table
         print("creating go table")
         fig = go.Figure(data=[go.Table(header=dict(values=df.columns), cells=dict(values=[df[col] for col in df.columns]))])
-        
         # Save the Plotly table to an HTML file
         fig.write_html(output_filename)
         print(f"Plotly HTML table saved to: {output_filename}")
@@ -64,11 +63,11 @@ error message if
 
 
 class SummaryTable(BaseModel):
-  repo_summary: str
-  file_list: list[str]
-  programming_languages: list[str]
-  how_it_works: str
-  main_topics: list[str]
+  repository_summary: str = Field(alias="Brief summary of the purpose of the repository, use no more than 3 bullet points")
+  how_it_works: str = Field(alias="Brief description of how the repository works, use no more than 3 bullet points")
+  main_topics: list[str] = Field(alias='Describe the top 3 topics only')
+  class Config:
+      populate_by_name = True
 
 repos = {
         # "auto-ml-pipeline": "communitiesuk",
@@ -107,5 +106,9 @@ for repo_name in repos.keys():
     print(combined_df)
     print(type(combined_df))
     print(df)
+    break
+combined_df[["Langauges", "Describe the top 3 topics only"]] = combined_df[["Langauges", "Describe the top 3 topics only"]].str.replace(",", ", ")
 
+
+# need to add spaces for file list, pgroamming languages, and topics columns
 json_to_plotly_table(json_data=combined_df, output_filename="test.html")
