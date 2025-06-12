@@ -17,21 +17,16 @@ model_settings = {"temperature": 0.4, "top_k": 64, "top_p": 0.95}
 
 def json_to_plotly_table(json_data, output_filename="plotly_table.html"):
     """
-    Converts JSON data to a Pandas DataFrame and outputs it as a Plotly HTML 
-table.
+    Converts JSON data to a Pandas DataFrame and outputs it as a Plotly HTML table.
 
     Args:
-        json_data (str or list or dict): The JSON data to convert.  Can be a 
-JSON string, 
-                                         a Python list, or a Python 
-dictionary.
-        output_filename (str): The name of the HTML file to save the Plotly 
-table to.
+        json_data (str or list or dict): The JSON data to convert.  Can be a JSON string, 
+                                         a Python list, or a Python dictionary.
+        output_filename (str): The name of the HTML file to save the Plotly table to.
                                  Defaults to "plotly_table.html".
-    
+
     Returns:
-        None.  Saves a Plotly HTML table to the specified file.  Prints an 
-error message if 
+        None.  Saves a Plotly HTML table to the specified file.  Prints an error message if 
                 there's an issue parsing JSON.
     """
 
@@ -77,6 +72,20 @@ error message if
     return
 
 
+def summarise_file(code_text, model):
+    prompt = f"Please summarise the following code, describe what it does and how it works: {code_text}"
+    code_summary = chat(
+      messages=[
+        {
+          'role': 'user',
+          'content': prompt,
+        }
+      ],
+      model=model,
+    )
+    return code_summary
+
+
 class SummaryTable(BaseModel):
   repository_summary: str = Field(alias="Brief summary of the purpose of the repository, use no more than 2 sentences")
   how_it_works: str = Field(alias="Brief description of how the repository works, use no more than 2 sentences")
@@ -95,11 +104,21 @@ repos = {
 
 combined_df = pd.DataFrame()
 
+code_summary_dict = {}
+
 for repo_name in repos.keys():
     repo_owner = repos[repo_name]
     print(repo_owner, repo_name)
     repo_structure, repo_code_dict, repo_data = get_repo_content(repo_owner=repo_owner, repo_name=repo_name)
-    prompt = f"Here a list of files in the repo with the file paths: {repo_structure}, here is a dictionary of each of the code files and the corresponding code {repo_code_dict}. Tell me about this repository"
+    
+    
+    for file in repo_code_dict.keys():
+        file_contents = repo_code_dict[file]
+        code_summary_dict[file] = summarise_file(file_contents, model)
+        print(file)
+        print(code_summary_dict[file])
+    
+    prompt = f"Here a list of files in the repo with the file paths: {repo_structure}, here is a dictionary of each of the code files and a summary of the code {code_summary_dict}. Tell me about this repository"
     response = chat(
       messages=[
         {
