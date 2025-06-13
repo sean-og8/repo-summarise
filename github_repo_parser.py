@@ -17,7 +17,6 @@ def authorise_github_login():
 
 def get_repo_meta_data(g, repo, repo_owner, repo_name):
     repo_metadata = {}
-    # repo metadata
     commits = repo.get_commits()
     commit_dates = [commit.commit.author.date for commit in commits]
     repo_metadata["Repository"] = repo_name

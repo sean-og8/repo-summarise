@@ -109,15 +109,17 @@ code_summary_dict = {}
 for repo_name in repos.keys():
     repo_owner = repos[repo_name]
     print(repo_owner, repo_name)
+    # get structure and content for repo
     repo_structure, repo_code_dict, repo_data = get_repo_content(repo_owner=repo_owner, repo_name=repo_name)
     
-    
+    # loop through files in repository and use llm to summarise individual files
     for file in repo_code_dict.keys():
         file_contents = repo_code_dict[file]
         code_summary_dict[file] = summarise_file(file_contents, model)
         print(file)
         print(code_summary_dict[file])
     
+    # ask llm about repo
     prompt = f"Here a list of files in the repo with the file paths: {repo_structure}, here is a dictionary of each of the code files and a summary of the code {code_summary_dict}. Tell me about this repository"
     response = chat(
       messages=[
