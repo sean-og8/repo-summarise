@@ -94,18 +94,18 @@ class SummaryTable(BaseModel):
       populate_by_name = True
 
 repos = {
-        # "auto-ml-pipeline": "communitiesuk",
-        # "Mobility_data_prototypes": "communitiesuk",
-        # "scrolly-data-story-template": "communitiesuk",
+        "property-price-modelling": "sean-og8",
+        "scrolly-data-story-template": "sean-og8",
         "repo-summarise": "sean-og8",
         "inat-amls2-project": "sean-og8",
         "sudoku_solver": "sean-og8",
         }
 
+# initialise summary variables
 combined_df = pd.DataFrame()
-
 code_summary_dict = {}
 
+# loop through repositories
 for repo_name in repos.keys():
     repo_owner = repos[repo_name]
     print(repo_owner, repo_name)
