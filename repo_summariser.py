@@ -7,13 +7,6 @@ import json
 
 from github_repo_parser import get_repo_content
 
-# Initialize the Ollama client
-client = ollama.Client()
-
-# Define the model and the input prompt
-model = "gemma3:12b"  # Replace model name
-model_settings = {"temperature": 0.4, "top_k": 64, "top_p": 0.95}
-
 
 def json_to_plotly_table(json_data, output_filename="plotly_table.html"):
     """
@@ -93,6 +86,13 @@ class SummaryTable(BaseModel):
   class Config:
       populate_by_name = True
 
+# Initialize the Ollama client
+client = ollama.Client()
+
+# Define the model and the input prompt
+model = "gemma3:12b"  # Replace model name
+model_settings = {"temperature": 0.4, "top_k": 64, "top_p": 0.95}
+
 repos = {
         "property-price-modelling": "sean-og8",
         "scrolly-data-story-template": "sean-og8",
@@ -137,10 +137,7 @@ for repo_name in repos.keys():
     print("updating table")
 
     df = pd.DataFrame([repo_data])
-
     combined_df = pd.concat([df, combined_df], axis=0)
-    print(combined_df)
-    print(type(combined_df))
 
 
 def format_list_columns(row):
