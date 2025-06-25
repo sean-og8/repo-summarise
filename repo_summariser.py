@@ -7,31 +7,19 @@ import json
 
 from github_repo_parser import get_repo_content
 
-# Initialize the Ollama client
-client = ollama.Client()
-
-# Define the model and the input prompt
-model = "gemma3:12b"  # Replace model name
-model_settings = {"temperature": 0.4, "top_k": 64, "top_p": 0.95}
-
 
 def json_to_plotly_table(json_data, output_filename="plotly_table.html"):
     """
-    Converts JSON data to a Pandas DataFrame and outputs it as a Plotly HTML 
-table.
+    Converts JSON data to a Pandas DataFrame and outputs it as a Plotly HTML table.
 
     Args:
-        json_data (str or list or dict): The JSON data to convert.  Can be a 
-JSON string, 
-                                         a Python list, or a Python 
-dictionary.
-        output_filename (str): The name of the HTML file to save the Plotly 
-table to.
+        json_data (str or list or dict): The JSON data to convert.  Can be a JSON string, 
+                                         a Python list, or a Python dictionary.
+        output_filename (str): The name of the HTML file to save the Plotly table to.
                                  Defaults to "plotly_table.html".
-    
+
     Returns:
-        None.  Saves a Plotly HTML table to the specified file.  Prints an 
-error message if 
+        None.  Saves a Plotly HTML table to the specified file.  Prints an error message if 
                 there's an issue parsing JSON.
     """
 
@@ -77,6 +65,20 @@ error message if
     return
 
 
+def summarise_file(code_text, model):
+    prompt = f"Please summarise the following code, describe what it does and how it works: {code_text}"
+    code_summary = chat(
+      messages=[
+        {
+          'role': 'user',
+          'content': prompt,
+        }
+      ],
+      model=model,
+    )
+    return code_summary
+
+
 class SummaryTable(BaseModel):
   repository_summary: str = Field(alias="Brief summary of the purpose of the repository, use no more than 2 sentences")
   how_it_works: str = Field(alias="Brief description of how the repository works, use no more than 2 sentences")
@@ -84,22 +86,41 @@ class SummaryTable(BaseModel):
   class Config:
       populate_by_name = True
 
+# Initialize the Ollama client
+client = ollama.Client()
+
+# Define the model and the input prompt
+model = "gemma3:12b"  # Replace model name
+model_settings = {"temperature": 0.4, "top_k": 64, "top_p": 0.95}
+
 repos = {
-        # "auto-ml-pipeline": "communitiesuk",
-        # "Mobility_data_prototypes": "communitiesuk",
-        # "scrolly-data-story-template": "communitiesuk",
+        "property-price-modelling": "sean-og8",
+        "scrolly-data-story-template": "sean-og8",
         "repo-summarise": "sean-og8",
         "inat-amls2-project": "sean-og8",
         "sudoku_solver": "sean-og8",
         }
 
+# initialise summary variables
 combined_df = pd.DataFrame()
+code_summary_dict = {}
 
+# loop through repositories
 for repo_name in repos.keys():
     repo_owner = repos[repo_name]
     print(repo_owner, repo_name)
+    # get structure and content for repo
     repo_structure, repo_code_dict, repo_data = get_repo_content(repo_owner=repo_owner, repo_name=repo_name)
-    prompt = f"Here a list of files in the repo with the file paths: {repo_structure}, here is a dictionary of each of the code files and the corresponding code {repo_code_dict}. Tell me about this repository"
+    
+    # loop through files in repository and use llm to summarise individual files
+    for file in repo_code_dict.keys():
+        file_contents = repo_code_dict[file]
+        code_summary_dict[file] = summarise_file(file_contents, model)
+        print(file)
+        print(code_summary_dict[file])
+    
+    # ask llm about repo
+    prompt = f"Here a list of files in the repo with the file paths: {repo_structure}, here is a dictionary of each of the code files and a summary of the code {code_summary_dict}. Tell me about this repository"
     response = chat(
       messages=[
         {
@@ -116,10 +137,7 @@ for repo_name in repos.keys():
     print("updating table")
 
     df = pd.DataFrame([repo_data])
-
     combined_df = pd.concat([df, combined_df], axis=0)
-    print(combined_df)
-    print(type(combined_df))
 
 
 def format_list_columns(row):
