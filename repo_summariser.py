@@ -147,7 +147,7 @@ def format_list_columns(row):
 
 # tidy list vars
 combined_df["Describe the top 3 topics/techniques in single words, do not use full sentences"] = combined_df["Describe the top 3 topics/techniques in single words, do not use full sentences"].apply(format_list_columns)
-combined_df["Langauges"] = combined_df["Langauges"].apply(format_list_columns)
+combined_df["Languages"] = combined_df["Languages"].apply(format_list_columns)
 
 # tidy col names
 rename_map = {
