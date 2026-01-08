@@ -7,7 +7,6 @@ import json
 
 from github_repo_parser import get_repo_content
 
-#test commit
 def json_to_plotly_table(json_data, output_filename="plotly_table.html"):
     """
     Converts JSON data to a Pandas DataFrame and outputs it as a Plotly HTML table.
